@@ -106,14 +106,14 @@ catalogs:
     vue-router: ^4.5.0
     vue-tsc: ^2.2.8
   storybook:
-    '@chromatic-com/storybook': ^4.1.3
-    '@storybook/addon-a11y': ^10.1.11
-    '@storybook/addon-docs': ^10.1.11
-    '@storybook/addon-themes': ^10.1.11
-    '@storybook/addon-vitest': ^10.1.11
-    '@storybook/vue3-vite': ^10.1.11
-    eslint-plugin-storybook: ^10.1.11
-    storybook: ^10.1.11
+    '@chromatic-com/storybook': ^5.0.1
+    '@storybook/addon-a11y': ^10.2.14
+    '@storybook/addon-docs': ^10.2.14
+    '@storybook/addon-themes': ^10.2.14
+    '@storybook/addon-vitest': ^10.2.14
+    '@storybook/vue3-vite': ^10.2.14
+    eslint-plugin-storybook: ^10.2.14
+    storybook: ^10.2.14
   e2e:
     '@playwright/cli': 0.1.0
     '@playwright/test': 1.58.0
