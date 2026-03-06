@@ -13,13 +13,15 @@
 
 ARG NODE_VERSION=24.13.1
 ARG PYTHON_VERSION=3.13
+ARG NSOLID_BUNDLE="" # optional path in build context to nsolid tarball
+ARG NSOLID_BUNDLE="" # optional path in build context to nsolid tarball
 
 
 # ==============================================================================
 # STAGE 1: JavaScript runner (@n8n/task-runner) artifact from CI
 # ==============================================================================
-# N|Solid Krypton provides the enhanced Node.js 24.x runtime on Debian (glibc)
-FROM nodesource/nsolid:krypton-latest AS javascript-runner-builder
+# JavaScript runner builder uses the standard Node.js Debian image
+FROM node:${NODE_VERSION}-bookworm-slim AS javascript-runner-builder
 COPY ./dist/task-runner-javascript /app/task-runner-javascript
 
 WORKDIR /app/task-runner-javascript
@@ -119,10 +121,9 @@ RUN set -e; \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # ==============================================================================
-# STAGE 4: N|Solid Debian base for JS task runner (glibc)
+# Stage 4: Node Debian base for JS task runner (regular node)
 # ==============================================================================
-# N|Solid Krypton (Node.js 24.x) on Debian slim provides the nsolid binary
-FROM nodesource/nsolid:krypton-latest AS node-debian
+FROM node:${NODE_VERSION}-bullseye-slim AS node-debian
 
 # ==============================================================================
 # STAGE 5: Runtime preparation
@@ -143,9 +144,16 @@ COPY --from=python-runner-builder /usr/local/lib/libpython3.13.so* /runtime/usr/
 COPY --from=python-runner-builder /lib/*-linux-gnu* /runtime/lib/
 COPY --from=python-runner-builder /usr/lib/*-linux-gnu* /runtime/usr/lib/
 
-# Copy Node.js runtime - use the N|Solid binary, copied as `node` so that
-# task-runner-launcher and any node invocations inside the runner use N|Solid
-COPY --from=node-debian /usr/local/bin/nsolid /runtime/usr/local/bin/node
+# Copy Node.js runtime (regular node). We may replace it with N|Solid
+# if a bundle is provided.
+COPY --from=node-debian /usr/local/bin/node /runtime/usr/local/bin/node
+
+# Optionally install N|Solid into the runtime filesystem
+RUN if [ -n "$NSOLID_BUNDLE" ]; then \
+      echo "Installing N|Solid bundle into distroless runtime" && \
+      tar -C /runtime/usr/local --strip-components=1 -xzf "$NSOLID_BUNDLE" && \
+      ln -sf /runtime/usr/local/bin/nsolid /runtime/usr/local/bin/node; \
+    fi
 
 # Copy task runners
 COPY --from=javascript-runner-builder /app/task-runner-javascript /runtime/opt/runners/task-runner-javascript

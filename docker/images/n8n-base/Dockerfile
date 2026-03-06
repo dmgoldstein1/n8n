@@ -5,38 +5,42 @@
 
 ARG NODE_VERSION=24.13.1
 
-# N|Solid Alpine image provides the nsolid runtime (Node.js 24.x / Krypton LTS)
-# for x86 and ARM architectures via multi-arch manifest.
-FROM nodesource/nsolid:alpine-latest
+# Switch to Debian slim-based Node.js image so we can use apt for N|Solid
+# installation. The NodeSource script automatically selects the Krypton
+# (Node 24) N|Solid package that's compatible with the codebase.
+FROM node:${NODE_VERSION}-bullseye-slim
+
+ARG NSOLID_BUNDLE="" # path in build context to nsolid tarball
 
 ARG NODE_VERSION
 
-# Install all dependencies in a single layer to minimize image size
-RUN apk add --no-cache busybox-binsh && \
-    # Install fonts
-    apk --no-cache add --virtual .build-deps-fonts msttcorefonts-installer fontconfig && \
-    update-ms-fonts && \
-    fc-cache -f && \
-    apk del .build-deps-fonts && \
-    find /usr/share/fonts/truetype/msttcorefonts/ -type l -exec unlink {} \; && \
-    # Install OS dependencies
-    apk update && \
-    apk upgrade --no-cache && \
-    apk add --no-cache \
+# Install necessary packages and N|Solid runtime via NodeSource script
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        curl \
         git \
-        openssh \
+        openssh-client \
         openssl \
-        graphicsmagick=1.3.45-r0 `# pinned to avoid ghostscript-fonts (AGPL)` \
+        graphicsmagick \
         tini \
         tzdata \
         ca-certificates \
-        libc6-compat && \
-    # Ensure the node command resolves to nsolid so all node invocations use
-    # the N|Solid runtime automatically (covers shebangs and child_process calls)
-    ln -sf /usr/local/bin/nsolid /usr/local/bin/node && \
-    # Cleanup
-    rm -rf /tmp/* /root/.npm /root/.cache/node /opt/yarn* && \
-    apk del apk-tools
+        fontconfig \
+    && rm -rf /var/lib/apt/lists/* \
+    # install N|Solid from NodeSource repo for Node 24
+    && curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
+    && apt-get install -y nsolid \
+    # ensure node command points to nsolid for instrumentation
+    && ln -sf /usr/bin/nsolid /usr/local/bin/node \
+    # cleanup apt caches
+    && rm -rf /var/lib/apt/lists/*
+
+# (bundles are still supported for offline builds)
+# bundle installation happens after apt-based install above
+RUN if [ -n "$NSOLID_BUNDLE" ]; then \
+      echo "Installing N|Solid from bundle: $NSOLID_BUNDLE" && \
+      tar -C /usr/local --strip-components=1 -xzf "$NSOLID_BUNDLE" && \
+      ln -sf /usr/local/bin/nsolid /usr/local/bin/node; \
+    fi
 
 WORKDIR /home/node
 EXPOSE 5678/tcp

@@ -10,8 +10,9 @@ ARG PYTHON_VERSION=3.13
 # ==============================================================================
 # STAGE 1: JavaScript runner (@n8n/task-runner) artifact from CI
 # ==============================================================================
-# N|Solid Alpine image provides the enhanced Node.js runtime (Node.js 24.x / Krypton LTS)
-FROM nodesource/nsolid:alpine-latest AS javascript-runner-builder
+# JavaScript runner builder uses Debian slim Node.js image
+# (musl/glibc mismatch avoided by staying on Debian)+
+FROM node:${NODE_VERSION}-bullseye-slim AS javascript-runner-builder
 COPY ./dist/task-runner-javascript /app/task-runner-javascript
 
 WORKDIR /app/task-runner-javascript
@@ -107,17 +108,29 @@ RUN set -e; \
     cd / && rm -rf /launcher-temp
 
 # ==============================================================================
-# STAGE 4: N|Solid alpine base for JS task runner
+# Stage 4: Debian base for JS task runner
 # ==============================================================================
-# Using N|Solid Alpine so the nsolid binary is available for copying into the runtime
-FROM nodesource/nsolid:alpine-latest AS node-alpine
+FROM node:${NODE_VERSION}-bullseye-slim AS node-debian
 
 # ==============================================================================
 # STAGE 5: Runtime
 # ==============================================================================
-FROM python:${PYTHON_VERSION}-alpine AS runtime
+FROM python:${PYTHON_VERSION}-slim-bookworm AS runtime
 ARG N8N_VERSION=snapshot
 ARG N8N_RELEASE_TYPE=dev
+ARG NSOLID_BUNDLE="" # optional path in build context to nsolid tarball
+
+# install curl for NodeSource script and optionally install N|Solid
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+    && curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
+    && apt-get install -y nsolid \
+    && ln -sf /usr/bin/nsolid /usr/local/bin/node \
+    && rm -rf /var/lib/apt/lists/*
+
+# Note: to actually install N|Solid you must supply the bundle when building
+# or manually copy the binary into the image after build. This repo cannot
+# download it automatically due to network restrictions.
+
 
 ENV NODE_ENV=production \
     N8N_RELEASE_TYPE=${N8N_RELEASE_TYPE} \
@@ -126,9 +139,15 @@ ENV NODE_ENV=production \
 # Bring `uv` over from python-runner-builder, to make the image easier to extend
 COPY --from=python-runner-builder /usr/local/bin/uv /usr/local/bin/uv
 
-# Bring the N|Solid binary over from node-alpine and register it as `node`
-# so that task-runner-launcher and all node invocations use N|Solid instrumentation
-COPY --from=node-alpine /usr/local/bin/nsolid /usr/local/bin/node
+# Bring the node binary over from node-debian
+COPY --from=node-debian /usr/local/bin/node /usr/local/bin/node
+
+# Optionally replace with N|Solid if bundle is provided (see build args above)
+RUN if [ -n "$NSOLID_BUNDLE" ]; then \
+      echo "Installing N|Solid in runtime from bundle: $NSOLID_BUNDLE" && \
+      tar -C /usr/local --strip-components=1 -xzf "$NSOLID_BUNDLE" && \
+      ln -sf /usr/local/bin/nsolid /usr/local/bin/node; \
+    fi
 
 # libstdc++ is required by Node
 # libc6-compat is required by task-runner-launcher

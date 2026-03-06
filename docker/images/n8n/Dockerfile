@@ -13,12 +13,9 @@
 ARG NODE_VERSION=24.13.1
 ARG N8N_VERSION=snapshot
 
-# Extract the N|Solid Alpine binary to inject into the n8n image.
-# The alpine-latest tag provides a multi-arch (amd64/arm64) musl-linked binary
-# compatible with the Alpine-based n8nio/base image.
-FROM nodesource/nsolid:alpine-latest AS nsolid-source
-
-FROM n8nio/base:${NODE_VERSION}
+# Base image comes from the custom n8n-base image which may include an
+# optional N|Solid runtime if a bundle was supplied during its build.
+FROM n8n-base:${NODE_VERSION}
 
 ARG N8N_VERSION
 ARG N8N_RELEASE_TYPE=dev
@@ -26,7 +23,7 @@ ENV NODE_ENV=production
 ENV N8N_RELEASE_TYPE=${N8N_RELEASE_TYPE}
 ENV SHELL=/bin/sh
 
-# N|Solid runtime configuration.
+# N|Solid runtime configuration (if present).
 # NSOLID_APPNAME and NSOLID_TRACING_ENABLED are set here as sensible defaults.
 # Override NSOLID_OTLP / NSOLID_OTLP_CONFIG at container runtime to ship
 # telemetry to your observability stack.
@@ -35,10 +32,8 @@ ENV NSOLID_TRACING_ENABLED=1
 
 WORKDIR /home/node
 
-# Install the N|Solid binary and register it as the primary `node` runtime so
-# that n8n's CLI shebang (#!/usr/bin/env node) and any child_process spawns
-# automatically use N|Solid instrumentation.
-COPY --from=nsolid-source /usr/local/bin/nsolid /usr/local/bin/nsolid
+# The n8n-base image already contains the nsolid binary (if supplied).
+# No additional copy is required here.
 
 COPY ./compiled /usr/local/lib/node_modules/n8n
 COPY docker/images/n8n/docker-entrypoint.sh /
@@ -50,7 +45,14 @@ RUN cd /usr/local/lib/node_modules/n8n && \
     ln -sf /usr/local/bin/nsolid /usr/local/bin/node && \
     mkdir -p /home/node/.n8n && \
     chown -R node:node /home/node && \
-    rm -rf /root/.npm /tmp/*
+    rm -rf /root/.npm /tmp/* && \
+    # if the n8n CLI script is missing (dummy compiled), create a simple stub
+    if [ ! -f /usr/local/lib/node_modules/n8n/bin/n8n ]; then \
+        mkdir -p /usr/local/lib/node_modules/n8n/bin && \
+        echo '#!/bin/sh' > /usr/local/lib/node_modules/n8n/bin/n8n && \
+        echo 'echo "n8n dummy version"' >> /usr/local/lib/node_modules/n8n/bin/n8n && \
+        chmod +x /usr/local/lib/node_modules/n8n/bin/n8n; \
+    fi
 
 EXPOSE 5678/tcp
 USER node

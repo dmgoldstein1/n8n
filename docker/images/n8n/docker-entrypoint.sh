@@ -11,9 +11,17 @@ if [ -d /opt/custom-certificates ]; then
 fi
 
 if [ "$#" -gt 0 ]; then
-  # Got started with arguments - run via nsolid to ensure N|Solid instrumentation
-  exec nsolid /usr/local/lib/node_modules/n8n/bin/n8n "$@"
+  # Got started with arguments - prefer nsolid if available, else fallback to n8n CLI
+  if command -v nsolid >/dev/null 2>&1; then
+    exec nsolid /usr/local/lib/node_modules/n8n/bin/n8n "$@"
+  else
+    exec n8n "$@"
+  fi
 else
   # Got started without arguments
-  exec nsolid /usr/local/lib/node_modules/n8n/bin/n8n
+  if command -v nsolid >/dev/null 2>&1; then
+    exec nsolid /usr/local/lib/node_modules/n8n/bin/n8n
+  else
+    exec n8n
+  fi
 fi
