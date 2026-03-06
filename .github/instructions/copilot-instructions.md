@@ -1,0 +1,1 @@
+This project exists to run n8n in a Docker container, NOT LOCALLY, and using the N|Solid runtime, not node.js. Do not run n8n locally, and do not use node.js to run n8n.

@@ -1,0 +1,37 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.78kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:24.13.1-bullseye-slim
+#2 DONE 0.2s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 1.05kB done
+#3 DONE 0.0s
+
+#4 [1/4] FROM docker.io/library/node:24.13.1-bullseye-slim@sha256:597306380830419c70897a39ec0037113f7adc118b4e8d703d7f28136cac434f
+#4 resolve docker.io/library/node:24.13.1-bullseye-slim@sha256:597306380830419c70897a39ec0037113f7adc118b4e8d703d7f28136cac434f done
+#4 DONE 0.0s
+
+#5 [2/4] RUN apt-get update && apt-get install -y --no-install-recommends         curl         git         openssh-client         openssl         graphicsmagick         tini         tzdata         ca-certificates         fontconfig     && rm -rf /var/lib/apt/lists/*     && curl -fsSL https://deb.nodesource.com/setup_24.x | bash -     && apt-get install -y nsolid     && ln -sf /usr/bin/nsolid /usr/local/bin/node     && rm -rf /var/lib/apt/lists/*
+#5 CACHED
+
+#6 [3/4] RUN if [ -n "" ]; then       echo "Installing N|Solid from bundle: " &&       tar -C /usr/local --strip-components=1 -xzf "" &&       ln -sf /usr/local/bin/nsolid /usr/local/bin/node;     fi
+#6 CACHED
+
+#7 [4/4] WORKDIR /home/node
+#7 CACHED
+
+#8 exporting to image
+#8 exporting layers done
+#8 exporting manifest sha256:b1b7ed72bb308d28d14d9ecb7e002371f84d373b902af2650df6c8bb9d0e2bcb done
+#8 exporting config sha256:99babfcf55474cdf9c288d675f8ebf4e68745fb82b570dd6dc540c184116698e done
+#8 exporting attestation manifest sha256:864c60edce1d3fac3ad641b2f4ff3bc89037c07ba390fd0b1e35e1f63d283f1b 0.0s done
+#8 exporting manifest list sha256:8b1c0dfc57acd9e70923d442b9beafd3fae84e112d638c10d8226a5558a2078d done
+#8 naming to docker.io/library/n8n-base:nsolid-debian done
+#8 unpacking to docker.io/library/n8n-base:nsolid-debian done
+#8 DONE 0.1s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/udv3hwb46v3tatxvc0v2axquv

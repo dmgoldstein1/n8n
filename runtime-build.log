@@ -1,0 +1,111 @@
+
+> @n8n/expression-runtime@0.3.0 build:runtime /Users/danielgoldstein/Documents/VibeCoding/n8n/packages/@n8n/expression-runtime
+> node esbuild.config.js
+
+✘ [ERROR] Could not resolve "luxon"
+
+    src/runtime/index.ts:1:25:
+      1 │ import { DateTime } from 'luxon';
+        ╵                          ~~~~~~~
+
+  The Yarn Plug'n'Play manifest forbids importing "luxon" here because it's not listed as a dependency of this package:
+
+    ../../../../../../.pnp.cjs:3175:31:
+      3175 │         "packageDependencies": [\
+           ╵                                ~~
+
+  You can mark the path "luxon" as external to exclude it from the bundle, which will remove this error and leave the unresolved path in the bundle.
+
+✘ [ERROR] Could not resolve "luxon"
+
+    src/extensions/extend.ts:1:25:
+      1 │ import { DateTime } from 'luxon';
+        ╵                          ~~~~~~~
+
+  The Yarn Plug'n'Play manifest forbids importing "luxon" here because it's not listed as a dependency of this package:
+
+    ../../../../../../.pnp.cjs:3175:31:
+      3175 │         "packageDependencies": [\
+           ╵                                ~~
+
+  You can mark the path "luxon" as external to exclude it from the bundle, which will remove this error and leave the unresolved path in the bundle.
+
+✘ [ERROR] Could not resolve "luxon"
+
+    src/extensions/utils.ts:1:25:
+      1 │ import { DateTime } from 'luxon';
+        ╵                          ~~~~~~~
+
+  The Yarn Plug'n'Play manifest forbids importing "luxon" here because it's not listed as a dependency of this package:
+
+    ../../../../../../.pnp.cjs:3175:31:
+      3175 │         "packageDependencies": [\
+           ╵                                ~~
+
+  You can mark the path "luxon" as external to exclude it from the bundle, which will remove this error and leave the unresolved path in the bundle.
+
+✘ [ERROR] Could not resolve "luxon"
+
+    src/extensions/number-extensions.ts:1:25:
+      1 │ import { DateTime } from 'luxon';
+        ╵                          ~~~~~~~
+
+  The Yarn Plug'n'Play manifest forbids importing "luxon" here because it's not listed as a dependency of this package:
+
+    ../../../../../../.pnp.cjs:3175:31:
+      3175 │         "packageDependencies": [\
+           ╵                                ~~
+
+  You can mark the path "luxon" as external to exclude it from the bundle, which will remove this error and leave the unresolved path in the bundle.
+
+✘ [ERROR] Could not resolve "luxon"
+
+    src/extensions/date-extensions.ts:1:25:
+      1 │ import { DateTime } from 'luxon';
+        ╵                          ~~~~~~~
+
+  The Yarn Plug'n'Play manifest forbids importing "luxon" here because it's not listed as a dependency of this package:
+
+    ../../../../../../.pnp.cjs:3175:31:
+      3175 │         "packageDependencies": [\
+           ╵                                ~~
+
+  You can mark the path "luxon" as external to exclude it from the bundle, which will remove this error and leave the unresolved path in the bundle.
+
+✘ [ERROR] Could not resolve "luxon"
+
+    src/extensions/string-extensions.ts:3:25:
+      3 │ import { DateTime } from 'luxon';
+        ╵                          ~~~~~~~
+
+  The Yarn Plug'n'Play manifest forbids importing "luxon" here because it's not listed as a dependency of this package:
+
+    ../../../../../../.pnp.cjs:3175:31:
+      3175 │         "packageDependencies": [\
+           ╵                                ~~
+
+  You can mark the path "luxon" as external to exclude it from the bundle, which will remove this error and leave the unresolved path in the bundle.
+
+❌ Build failed: Error: Build failed with 6 errors:
+src/extensions/date-extensions.ts:1:25: ERROR: Could not resolve "luxon"
+src/extensions/extend.ts:1:25: ERROR: Could not resolve "luxon"
+src/extensions/number-extensions.ts:1:25: ERROR: Could not resolve "luxon"
+src/extensions/string-extensions.ts:3:25: ERROR: Could not resolve "luxon"
+src/extensions/utils.ts:1:25: ERROR: Could not resolve "luxon"
+...
+    at failureErrorWithLog (/Users/danielgoldstein/Documents/VibeCoding/n8n/node_modules/.pnpm/esbuild@0.25.12/node_modules/esbuild/lib/main.js:1467:15)
+    at /Users/danielgoldstein/Documents/VibeCoding/n8n/node_modules/.pnpm/esbuild@0.25.12/node_modules/esbuild/lib/main.js:926:25
+    at /Users/danielgoldstein/Documents/VibeCoding/n8n/node_modules/.pnpm/esbuild@0.25.12/node_modules/esbuild/lib/main.js:878:52
+    at buildResponseToResult (/Users/danielgoldstein/Documents/VibeCoding/n8n/node_modules/.pnpm/esbuild@0.25.12/node_modules/esbuild/lib/main.js:924:7)
+    at /Users/danielgoldstein/Documents/VibeCoding/n8n/node_modules/.pnpm/esbuild@0.25.12/node_modules/esbuild/lib/main.js:951:16
+    at responseCallbacks.<computed> (/Users/danielgoldstein/Documents/VibeCoding/n8n/node_modules/.pnpm/esbuild@0.25.12/node_modules/esbuild/lib/main.js:603:9)
+    at handleIncomingPacket (/Users/danielgoldstein/Documents/VibeCoding/n8n/node_modules/.pnpm/esbuild@0.25.12/node_modules/esbuild/lib/main.js:658:12)
+    at Socket.readFromStdout (/Users/danielgoldstein/Documents/VibeCoding/n8n/node_modules/.pnpm/esbuild@0.25.12/node_modules/esbuild/lib/main.js:581:7)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:561:12) {
+  errors: [Getter/Setter],
+  warnings: [Getter/Setter]
+}
+/Users/danielgoldstein/Documents/VibeCoding/n8n/packages/@n8n/expression-runtime:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @n8n/expression-runtime@0.3.0 build:runtime: `node esbuild.config.js`
+Exit status 1
