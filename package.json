@@ -48,7 +48,8 @@
     "test:show:report": "pnpm --filter=n8n-playwright exec playwright show-report",
     "watch": "turbo run watch --concurrency=32",
     "webhook": "./packages/cli/bin/n8n webhook",
-    "worker": "./packages/cli/bin/n8n worker"
+    "worker": "./packages/cli/bin/n8n worker",
+    "postinstall": "socket patch apply --silent --ecosystems npm"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.26.0",
