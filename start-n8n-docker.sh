@@ -36,7 +36,7 @@ docker volume create n8n_data 2>/dev/null || true
 echo "✓ Docker environment prepared"
 echo "Starting n8n in Docker..."
 
-# Start n8n container with Keychain credentials
+# Start n8n container with Keychain credentials using official Docker image
 docker run -d \
   --name n8n-local \
   -p 5678:5678 \
@@ -45,7 +45,7 @@ docker run -d \
   -e N8N_EDITOR_BASE_URL="http://localhost:5678" \
   -e N8N_LOG_LEVEL="info" \
   -v n8n_data:/home/node/.n8n \
-  n8nio/n8n:local
+  n8nio/n8n:latest
 
 # Wait for container to start
 sleep 3

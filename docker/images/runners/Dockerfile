@@ -113,6 +113,11 @@ RUN set -e; \
 FROM node:${NODE_VERSION}-bullseye-slim AS node-debian
 
 # ==============================================================================
+# Stage 4.5: Alpine base for corepack/pnpm
+# ==============================================================================
+FROM node:${NODE_VERSION}-alpine AS node-alpine
+
+# ==============================================================================
 # STAGE 5: Runtime
 # ==============================================================================
 FROM python:${PYTHON_VERSION}-slim-bookworm AS runtime
