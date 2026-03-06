@@ -45,14 +45,7 @@ RUN cd /usr/local/lib/node_modules/n8n && \
     ln -sf /usr/local/bin/nsolid /usr/local/bin/node && \
     mkdir -p /home/node/.n8n && \
     chown -R node:node /home/node && \
-    rm -rf /root/.npm /tmp/* && \
-    # if the n8n CLI script is missing (dummy compiled), create a simple stub
-    if [ ! -f /usr/local/lib/node_modules/n8n/bin/n8n ]; then \
-        mkdir -p /usr/local/lib/node_modules/n8n/bin && \
-        echo '#!/bin/sh' > /usr/local/lib/node_modules/n8n/bin/n8n && \
-        echo 'echo "n8n dummy version"' >> /usr/local/lib/node_modules/n8n/bin/n8n && \
-        chmod +x /usr/local/lib/node_modules/n8n/bin/n8n; \
-    fi
+    rm -rf /root/.npm /tmp/*
 
 EXPOSE 5678/tcp
 USER node
