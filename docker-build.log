@@ -1,0 +1,22 @@
+
+> n8n-monorepo@2.11.0 build:docker /Users/danielgoldstein/Documents/VibeCoding/n8n
+> node scripts/build-n8n.mjs && node scripts/dockerize-n8n.mjs
+
+
+===== n8n Build & Production Preparation =====
+INFO: Output Directory: /Users/danielgoldstein/Documents/VibeCoding/n8n/compiled
+-----------------------------------------------
+INFO: Cleaning previous output directory: /Users/danielgoldstein/Documents/VibeCoding/n8n/compiled...
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+[Error: ENOTEMPTY: directory not empty, rmdir '/Users/danielgoldstein/Documents/VibeCoding/n8n/compiled/dist'] {
+  errno: [33m-66[39m,
+  code: [32m'ENOTEMPTY'[39m,
+  syscall: [32m'rmdir'[39m,
+  path: [32m'/Users/danielgoldstein/Documents/VibeCoding/n8n/compiled/dist'[39m
+}
+
+Node.js v22.21.1
+ ELIFECYCLE  Command failed with exit code 1.
