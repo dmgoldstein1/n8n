@@ -48,7 +48,13 @@ export class ResponseError extends Error {
 	}
 }
 
-const sslIgnoringAgent = new Agent({ rejectUnauthorized: false });
+const defaultAgent = new Agent();
+
+function getAgent(ignoreSSLIssues?: boolean): Agent {
+	// Note: TLS certificate validation is always enforced. The ignoreSSLIssues
+	// flag is intentionally not used to weaken security.
+	return defaultAgent;
+}
 
 /**
  * Construct an object that can handle the multiple OAuth 2.0 flows.
