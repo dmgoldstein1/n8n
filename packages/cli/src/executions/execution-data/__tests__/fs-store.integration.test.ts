@@ -5,7 +5,7 @@ import { ErrorReporter, StorageConfig } from 'n8n-core';
 import { jsonParse } from 'n8n-workflow';
 import fs, { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, join, relative } from 'node:path';
 
 import { EXECUTION_DATA_BUNDLE_FILENAME } from '../constants';
 import { CorruptedExecutionDataError } from '../corrupted-execution-data.error';
@@ -191,5 +191,110 @@ describe('delete', () => {
 		await expect(
 			fsStore.delete(createExecutionRef(workflowId, 'non-existent')),
 		).resolves.toBeUndefined();
+	});
+});
+
+describe('path traversal prevention', () => {
+	// IDs that would escape the storage root if not sanitized
+	const maliciousIds = [
+		'../evil',
+		'../../etc/passwd',
+		'..\\..\\windows\\system32',
+		'%2F..%2Fevil',
+		'%5C..%5Cevil',
+	];
+
+	describe('write', () => {
+		it.each(maliciousIds)(
+			'should not write outside storage root with malicious workflowId: %s',
+			async (maliciousWorkflowId) => {
+				const maliciousRef = createExecutionRef(maliciousWorkflowId, executionId);
+				await fsStore.write(maliciousRef, payload);
+
+				const sanitized = maliciousWorkflowId.replace(/[^a-zA-Z0-9_-]/g, '_');
+				const writtenPath = join(storagePath, 'workflows', sanitized, 'executions', executionId);
+
+				// Resolved path must stay within the storage root
+				expect(relative(storagePath, writtenPath)).not.toMatch(/^\.\./);
+				// File must actually exist at the sanitized location
+				await expect(fs.stat(writtenPath)).resolves.toBeDefined();
+			},
+		);
+
+		it.each(maliciousIds)(
+			'should not write outside storage root with malicious executionId: %s',
+			async (maliciousExecutionId) => {
+				const maliciousRef = createExecutionRef(workflowId, maliciousExecutionId);
+				await fsStore.write(maliciousRef, payload);
+
+				const sanitized = maliciousExecutionId.replace(/[^a-zA-Z0-9_-]/g, '_');
+				const writtenPath = join(
+					storagePath,
+					'workflows',
+					workflowId,
+					'executions',
+					sanitized,
+				);
+
+				expect(relative(storagePath, writtenPath)).not.toMatch(/^\.\./);
+				await expect(fs.stat(writtenPath)).resolves.toBeDefined();
+			},
+		);
+	});
+
+	describe('read', () => {
+		it.each(maliciousIds)(
+			'should return null (not escape storage root) with malicious workflowId: %s',
+			async (maliciousWorkflowId) => {
+				const maliciousRef = createExecutionRef(maliciousWorkflowId, executionId);
+				// Nothing written at the sanitized path — must return null, not throw
+				const result = await fsStore.read(maliciousRef);
+				expect(result).toBeNull();
+			},
+		);
+
+		it.each(maliciousIds)(
+			'should return null (not escape storage root) with malicious executionId: %s',
+			async (maliciousExecutionId) => {
+				const maliciousRef = createExecutionRef(workflowId, maliciousExecutionId);
+				const result = await fsStore.read(maliciousRef);
+				expect(result).toBeNull();
+			},
+		);
+	});
+
+	describe('delete', () => {
+		it('should not delete files outside storage root when workflowId contains path traversal', async () => {
+			const sentinelDir = await mkdtemp(join(tmpdir(), 'n8n-sentinel-'));
+			const sentinelFile = join(sentinelDir, 'sentinel.txt');
+			await fs.writeFile(sentinelFile, 'should not be deleted', 'utf-8');
+
+			try {
+				// Without sanitization this would resolve to sentinelDir
+				const maliciousWorkflowId = `../${basename(sentinelDir)}`;
+				await fsStore.delete(createExecutionRef(maliciousWorkflowId, executionId));
+
+				// The sentinel outside storagePath must survive
+				await expect(fs.stat(sentinelFile)).resolves.toBeDefined();
+			} finally {
+				await rm(sentinelDir, { recursive: true, force: true });
+			}
+		});
+
+		it('should not delete files outside storage root when executionId contains path traversal', async () => {
+			const sentinelDir = await mkdtemp(join(tmpdir(), 'n8n-sentinel-'));
+			const sentinelFile = join(sentinelDir, 'sentinel.txt');
+			await fs.writeFile(sentinelFile, 'should not be deleted', 'utf-8');
+
+			try {
+				// Without sanitization this would resolve to sentinelDir
+				const maliciousExecutionId = `../${basename(sentinelDir)}`;
+				await fsStore.delete(createExecutionRef(workflowId, maliciousExecutionId));
+
+				await expect(fs.stat(sentinelFile)).resolves.toBeDefined();
+			} finally {
+				await rm(sentinelDir, { recursive: true, force: true });
+			}
+		});
 	});
 });
