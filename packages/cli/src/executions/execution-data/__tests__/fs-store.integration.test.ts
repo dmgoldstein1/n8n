@@ -212,12 +212,21 @@ describe('path traversal prevention', () => {
 				await fsStore.write(maliciousRef, payload);
 
 				const sanitized = maliciousWorkflowId.replace(/[^a-zA-Z0-9_-]/g, '_');
-				const writtenPath = join(storagePath, 'workflows', sanitized, 'executions', executionId);
+				const writtenPath = join(
+					storagePath,
+					'workflows',
+					sanitized,
+					'executions',
+					executionId,
+					'execution_data',
+					EXECUTION_DATA_BUNDLE_FILENAME,
+				);
 
 				// Resolved path must stay within the storage root
 				expect(relative(storagePath, writtenPath)).not.toMatch(/^\.\./);
-				// File must actually exist at the sanitized location
-				await expect(fs.stat(writtenPath)).resolves.toBeDefined();
+				// Bundle file must actually exist at the sanitized location
+				const stat = await fs.stat(writtenPath);
+				expect(stat.isFile()).toBe(true);
 			},
 		);
 
@@ -234,10 +243,14 @@ describe('path traversal prevention', () => {
 					workflowId,
 					'executions',
 					sanitized,
+					'execution_data',
+					EXECUTION_DATA_BUNDLE_FILENAME,
 				);
 
 				expect(relative(storagePath, writtenPath)).not.toMatch(/^\.\./);
-				await expect(fs.stat(writtenPath)).resolves.toBeDefined();
+				// Bundle file must actually exist at the sanitized location
+				const stat = await fs.stat(writtenPath);
+				expect(stat.isFile()).toBe(true);
 			},
 		);
 	});
@@ -266,12 +279,20 @@ describe('path traversal prevention', () => {
 	describe('delete', () => {
 		it('should not delete files outside storage root when workflowId contains path traversal', async () => {
 			const sentinelDir = await mkdtemp(join(tmpdir(), 'n8n-sentinel-'));
-			const sentinelFile = join(sentinelDir, 'sentinel.txt');
+			// Without sanitization, the resolved execution dir would be:
+			//   storagePath/workflows/../../<sentinelBasename>/executions/executionId
+			//     ↑ `..` from workflows/ → storagePath/
+			//     ↑ `..` from storagePath/ → tmpdir/
+			//   = tmpdir/<sentinelBasename>/executions/executionId
+			// Place the sentinel inside that exact sub-directory so deletion would destroy it.
+			const sentinelExecDir = join(sentinelDir, 'executions', executionId);
+			await fs.mkdir(sentinelExecDir, { recursive: true });
+			const sentinelFile = join(sentinelExecDir, 'sentinel.txt');
 			await fs.writeFile(sentinelFile, 'should not be deleted', 'utf-8');
 
 			try {
-				// Without sanitization this would resolve to sentinelDir
-				const maliciousWorkflowId = `../${basename(sentinelDir)}`;
+				// ../../sentinelBasename escapes storagePath/workflows/ up to tmpdir()
+				const maliciousWorkflowId = `../../${basename(sentinelDir)}`;
 				await fsStore.delete(createExecutionRef(maliciousWorkflowId, executionId));
 
 				// The sentinel outside storagePath must survive
@@ -283,12 +304,19 @@ describe('path traversal prevention', () => {
 
 		it('should not delete files outside storage root when executionId contains path traversal', async () => {
 			const sentinelDir = await mkdtemp(join(tmpdir(), 'n8n-sentinel-'));
+			// Without sanitization, the resolved execution dir would be:
+			//   storagePath/workflows/workflowId/executions/../../../../<sentinelBasename>
+			//     ↑ `..` from executions/ → storagePath/workflows/workflowId/
+			//     ↑ `..` from workflowId/  → storagePath/workflows/
+			//     ↑ `..` from workflows/   → storagePath/
+			//     ↑ `..` from storagePath/ → tmpdir/
+			//   = tmpdir/<sentinelBasename>  (the entire sentinelDir would be removed)
 			const sentinelFile = join(sentinelDir, 'sentinel.txt');
 			await fs.writeFile(sentinelFile, 'should not be deleted', 'utf-8');
 
 			try {
-				// Without sanitization this would resolve to sentinelDir
-				const maliciousExecutionId = `../${basename(sentinelDir)}`;
+				// ../../../../sentinelBasename escapes storagePath/workflows/workflowId/executions/ up to tmpdir()
+				const maliciousExecutionId = `../../../../${basename(sentinelDir)}`;
 				await fsStore.delete(createExecutionRef(workflowId, maliciousExecutionId));
 
 				await expect(fs.stat(sentinelFile)).resolves.toBeDefined();
