@@ -364,8 +364,9 @@ overrides:
   word-wrap@<=1.2.4: 1.2.4
   minimatch@<=5.1.8: 5.1.8
   fast-xml-parser: 5.3.8
+  '@grpc/grpc-js': ^1.10.9
 
-pnpmfileChecksum: sha256-SDcYCt6bKcVG8/2TCTi4HxNwJHXQ8M/mc5rMqFpFqdc=
+pnpmfileChecksum: sha256-fkTmm2aPOqDe3sa6k5LePMC6Rk8wEjgUfikzory/gWs=
 
 patchedDependencies:
   '@lezer/highlight':
@@ -3011,7 +3012,7 @@ importers:
         version: 0.7.0(typescript@5.9.2)(vue@3.5.29(typescript@5.9.2))
       eslint-plugin-storybook:
         specifier: catalog:storybook
-        version: 10.2.16(eslint@10.0.2(jiti@2.6.1))(storybook@10.2.15(@testing-library/dom@9.3.4)(bufferutil@4.1.0)(prettier@3.6.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(utf-8-validate@5.0.10))(typescript@5.9.2)
+        version: 10.2.16(eslint@9.29.0(jiti@2.6.1))(storybook@10.2.15(@testing-library/dom@9.3.4)(bufferutil@4.1.0)(prettier@3.6.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(utf-8-validate@5.0.10))(typescript@5.9.2)
       playwright:
         specifier: catalog:e2e
         version: 1.58.0
@@ -3755,7 +3756,7 @@ importers:
         version: 0.4.14
       eslint-plugin-n8n-nodes-base:
         specifier: ^1.16.5
-        version: 1.16.5(eslint@10.0.2(jiti@2.6.1))(typescript@5.9.2)
+        version: 1.16.5(eslint@9.29.0(jiti@2.6.1))(typescript@5.9.2)
       n8n-containers:
         specifier: workspace:*
         version: link:../testing/containers
@@ -3870,7 +3871,7 @@ importers:
         version: 4.17.17
       eslint-plugin-playwright:
         specifier: catalog:e2e
-        version: 2.2.2(eslint@10.0.2(jiti@2.6.1))
+        version: 2.2.2(eslint@9.29.0(jiti@2.6.1))
       flatted:
         specifier: 'catalog:'
         version: 3.2.7
@@ -5651,10 +5652,6 @@ packages:
   '@grpc/grpc-js@1.14.3':
     resolution: {integrity: sha512-Iq8QQQ/7X3Sac15oB6p0FmUg/klxQvXLeileoqrTRGJYLV+/9tubbr9ipz0GKHjmXVsgFPo/+W+2cA8eNcR+XA==}
     engines: {node: '>=12.10.0'}
-
-  '@grpc/grpc-js@1.7.3':
-    resolution: {integrity: sha512-H9l79u4kJ2PVSxUNA08HMYAnUBLj9v6KjYQ7SQ71hOZcEXhShE/y5iQCesP8+6/Ik/7i2O0a10bPquIcYfufog==}
-    engines: {node: ^8.13.0 || >=10.10.0}
 
   '@grpc/proto-loader@0.7.15':
     resolution: {integrity: sha512-tMXdRCfYVixjuFK+Hk0Q1s38gV9zDiDJfWL3h1rv4Qc39oILCu1TRTDt7+fGUI8K4G1Fj125Hx/ru3azECWTyQ==}
@@ -21209,11 +21206,6 @@ snapshots:
       '@grpc/proto-loader': 0.8.0
       '@js-sdsl/ordered-map': 4.4.2
 
-  '@grpc/grpc-js@1.7.3':
-    dependencies:
-      '@grpc/proto-loader': 0.7.15
-      '@types/node': 20.19.35
-
   '@grpc/proto-loader@0.7.15':
     dependencies:
       lodash.camelcase: 4.3.0
@@ -25310,20 +25302,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/utils@6.21.0(eslint@10.0.2(jiti@2.6.1))(typescript@5.9.2)':
-    dependencies:
-      '@eslint-community/eslint-utils': 4.9.1(eslint@10.0.2(jiti@2.6.1))
-      '@types/json-schema': 7.0.15
-      '@types/semver': 7.7.1
-      '@typescript-eslint/scope-manager': 6.21.0
-      '@typescript-eslint/types': 6.21.0
-      '@typescript-eslint/typescript-estree': 6.21.0(typescript@5.9.2)
-      eslint: 10.0.2(jiti@2.6.1)
-      semver: 7.7.4
-    transitivePeerDependencies:
-      - supports-color
-      - typescript
-
   '@typescript-eslint/utils@6.21.0(eslint@9.29.0(jiti@2.6.1))(typescript@5.9.2)':
     dependencies:
       '@eslint-community/eslint-utils': 4.9.1(eslint@9.29.0(jiti@2.6.1))
@@ -25842,7 +25820,7 @@ snapshots:
 
   '@zilliz/milvus2-sdk-node@2.6.10':
     dependencies:
-      '@grpc/grpc-js': 1.7.3
+      '@grpc/grpc-js': 1.14.3
       '@grpc/proto-loader': 0.7.15
       '@opentelemetry/api': 1.9.0
       '@petamoriken/float16': 3.9.3
@@ -28349,20 +28327,6 @@ snapshots:
       eslint: 10.0.2(jiti@2.6.1)
       lodash: 4.17.23
 
-  eslint-plugin-n8n-nodes-base@1.16.5(eslint@10.0.2(jiti@2.6.1))(typescript@5.9.2):
-    dependencies:
-      '@typescript-eslint/utils': 6.21.0(eslint@10.0.2(jiti@2.6.1))(typescript@5.9.2)
-      camel-case: 4.1.2
-      indefinite: 2.5.2
-      pascal-case: 3.1.2
-      pluralize: 8.0.0
-      sentence-case: 3.0.4
-      title-case: 3.0.3
-    transitivePeerDependencies:
-      - eslint
-      - supports-color
-      - typescript
-
   eslint-plugin-n8n-nodes-base@1.16.5(eslint@9.29.0(jiti@2.6.1))(typescript@5.9.2):
     dependencies:
       '@typescript-eslint/utils': 6.21.0(eslint@9.29.0(jiti@2.6.1))(typescript@5.9.2)
@@ -28377,15 +28341,15 @@ snapshots:
       - supports-color
       - typescript
 
-  eslint-plugin-playwright@2.2.2(eslint@10.0.2(jiti@2.6.1)):
+  eslint-plugin-playwright@2.2.2(eslint@9.29.0(jiti@2.6.1)):
     dependencies:
-      eslint: 10.0.2(jiti@2.6.1)
+      eslint: 9.29.0(jiti@2.6.1)
       globals: 13.24.0
 
-  eslint-plugin-storybook@10.2.16(eslint@10.0.2(jiti@2.6.1))(storybook@10.2.15(@testing-library/dom@9.3.4)(bufferutil@4.1.0)(prettier@3.6.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(utf-8-validate@5.0.10))(typescript@5.9.2):
+  eslint-plugin-storybook@10.2.16(eslint@9.29.0(jiti@2.6.1))(storybook@10.2.15(@testing-library/dom@9.3.4)(bufferutil@4.1.0)(prettier@3.6.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(utf-8-validate@5.0.10))(typescript@5.9.2):
     dependencies:
-      '@typescript-eslint/utils': 8.56.1(eslint@10.0.2(jiti@2.6.1))(typescript@5.9.2)
-      eslint: 10.0.2(jiti@2.6.1)
+      '@typescript-eslint/utils': 8.56.1(eslint@9.29.0(jiti@2.6.1))(typescript@5.9.2)
+      eslint: 9.29.0(jiti@2.6.1)
       storybook: 10.2.15(@testing-library/dom@9.3.4)(bufferutil@4.1.0)(prettier@3.6.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
       - supports-color
@@ -32239,7 +32203,7 @@ snapshots:
       oas-kit-common: 1.0.8
       reftools: 1.1.9
       yaml: 1.10.2
-      yargs: 17.0.1
+      yargs: 17.7.2
 
   oas-schema-walker@1.1.5: {}
 
