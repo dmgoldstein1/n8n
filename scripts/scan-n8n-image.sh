@@ -36,7 +36,9 @@ fi
 
 IMAGE_BASE_NAME="${IMAGE_BASE_NAME:-n8nio/n8n}"
 IMAGE_TAG="${IMAGE_TAG:-local}"
-TRIVY_IMAGE="${TRIVY_IMAGE:-aquasec/trivy:latest}"
+# Pin to a specific Trivy version to avoid mutable-tag risk.
+# Override with TRIVY_IMAGE env var if you need a different version.
+TRIVY_IMAGE="${TRIVY_IMAGE:-aquasec/trivy:0.69.2}"
 SEVERITY="${TRIVY_SEVERITY:-CRITICAL,HIGH,MEDIUM,LOW}"
 OUTPUT_FORMAT="${TRIVY_FORMAT:-table}"
 OUTPUT_FILE="${TRIVY_OUTPUT:-}"
@@ -47,7 +49,9 @@ QUIET="${TRIVY_QUIET:-false}"
 
 FULL_IMAGE_NAME="${IMAGE_BASE_NAME}:${IMAGE_TAG}"
 
-# Resolve and validate VEX file path (must be within root)
+# Resolve and validate file path (must be within repo root).
+# Uses node's path.resolve for portability (realpath -m / readlink -f differ on macOS).
+# Path is passed via an environment variable to avoid any shell-injection risk.
 resolve_within_root() {
 	local env_var="$1"
 	local default_rel="$2"
@@ -55,13 +59,14 @@ resolve_within_root() {
 
 	local resolved
 	if [ -n "$env_val" ]; then
-		resolved=$(realpath -m "$env_val" 2>/dev/null || readlink -f "$env_val" 2>/dev/null || echo "$env_val")
+		resolved=$(N8N_RESOLVE_INPUT="$env_val" node -p "require('path').resolve(process.env.N8N_RESOLVE_INPUT)" 2>/dev/null) || resolved="$env_val"
 	else
 		resolved="$ROOT_DIR/$default_rel"
 	fi
 
-	# Ensure the path is within root
-	if [[ "$resolved" != "$ROOT_DIR"* ]] && [ "$resolved" != "$ROOT_DIR" ]; then
+	# Strict containment: resolved must equal root or start with root + /
+	# This prevents "$ROOT_DIR-other/..." from passing a prefix-only check.
+	if [ "$resolved" != "$ROOT_DIR" ] && [[ "$resolved" != "$ROOT_DIR/"* ]]; then
 		echo -e "${RED}Error: $env_var must resolve within the repository root${NC}" >&2
 		exit 1
 	fi

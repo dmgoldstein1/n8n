@@ -50,15 +50,22 @@ CLI_DIR="$ROOT_DIR/packages/cli"
 # Patches to keep during deployment
 PATCHES_TO_KEEP=("pdfjs-dist" "pkce-challenge" "bull")
 
+# Package JSON files to back up (populated before backup loop; used by trap)
+PACKAGE_JSON_FILES=()
+
 # ===== Timer Functions =====
-declare -A TIMER_STARTS=()
+# Use plain variables for Bash 3.2 compatibility (macOS ships /bin/bash 3.2)
+_TIMER_total_build=0
+_TIMER_package_build=0
+_TIMER_package_deploy=0
 
 start_timer() {
-	TIMER_STARTS["$1"]=$(date +%s)
+	eval "_TIMER_${1}=$(date +%s)"
 }
 
 get_elapsed_time() {
-	local start="${TIMER_STARTS[${1}]:-0}"
+	local start_var="_TIMER_${1}"
+	local start="${!start_var:-0}"
 	local now
 	now=$(date +%s)
 	echo $((now - start))
@@ -87,6 +94,20 @@ print_header() {
 print_divider() {
 	echo -e "${GRAY}-----------------------------------------------${NC}"
 }
+
+# ===== Cleanup Trap =====
+# Restore any backed-up package.json files on exit (success or failure).
+# This prevents leftover .bak files when the script exits mid-run.
+_restore_package_json_backups() {
+	if [ "${CI:-}" != "true" ] && [ "${#PACKAGE_JSON_FILES[@]}" -gt 0 ]; then
+		for file in "${PACKAGE_JSON_FILES[@]}"; do
+			if [ -n "$file" ] && [ -f "${file}.bak" ]; then
+				mv "${file}.bak" "$file"
+			fi
+		done
+	fi
+}
+trap _restore_package_json_backups EXIT
 
 # ===== Main Build Process =====
 print_header "n8n Build & Production Preparation"
@@ -219,14 +240,7 @@ echo -e "${YELLOW}INFO: Creating JavaScript task runner deployment in '$COMPILED
 
 PACKAGE_DEPLOY_TIME=$(get_elapsed_time "package_deploy")
 
-# Restore package.json files (only locally, not in CI)
-if [ "${CI:-}" != "true" ]; then
-	for file in "${PACKAGE_JSON_FILES[@]}"; do
-		if [ -n "$file" ] && [ -f "${file}.bak" ]; then
-			mv "${file}.bak" "$file"
-		fi
-	done
-fi
+# The EXIT trap handles package.json backup restoration in all cases.
 
 # Calculate output sizes
 COMPILED_APP_SIZE=$(du -sh "$COMPILED_APP_DIR" | cut -f1)

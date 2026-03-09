@@ -41,13 +41,15 @@ echo -e "${GREEN}✅ License data collected${NC}"
 # Process JSON into markdown using embedded Node.js
 mkdir -p "$CLI_ROOT"
 
-node << NODEOF
+# Pass paths as environment variables so we can use a quoted heredoc
+# (quoted delimiter prevents bash from interpreting backticks or $ in the JS source)
+TEMP_LICENSES_PATH="$TEMP_LICENSES" OUTPUT_FILE_PATH="$OUTPUT_FILE" node << 'NODEOF'
 'use strict';
 const fs = require('fs');
 const path = require('path');
 
-const tempLicensesPath = '$TEMP_LICENSES';
-const outputPath = '$OUTPUT_FILE';
+const tempLicensesPath = process.env.TEMP_LICENSES_PATH;
+const outputPath = process.env.OUTPUT_FILE_PATH;
 
 const INVALID_LICENSE_FILES = ['readme.md', 'readme.txt', 'readme', 'package.json', 'changelog.md', 'history.md'];
 const VALID_LICENSE_FILES = ['license', 'licence', 'copying', 'copyright', 'unlicense'];
@@ -104,7 +106,7 @@ for (const [key, pkg] of Object.entries(packages)) {
   const { packageName, version } = parsePackageKey(key);
   if (shouldExclude(packageName)) continue;
 
-  const licenseType = pkg.licenses || 'Unknown';
+  const licenseType = pkg.licenses || 'UNKNOWN';
   processedCount++;
 
   if (!licenseGroups.has(licenseType)) licenseGroups.set(licenseType, []);
@@ -148,12 +150,14 @@ for (const licenseType of sortedLicenseTypes) {
   doc += '\n';
 }
 
+// Use a variable for the code fence to avoid any escape ambiguity
+const FENCE = '```';
 doc += '# License Texts\n\n';
 for (const licenseType of sortedLicenseTypes) {
   const licenseText = licenseTexts.get(licenseType);
   doc += '## ' + licenseType + ' License Text\n\n';
   if (licenseText && licenseText.trim()) {
-    doc += '\`\`\`\n' + licenseText + '\n\`\`\`\n\n';
+    doc += FENCE + '\n' + licenseText + '\n' + FENCE + '\n\n';
   } else {
     doc += licenseType + ' license text not available.\n\n';
   }

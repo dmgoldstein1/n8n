@@ -13,11 +13,12 @@
 # Environment variables for owner creation (when --run is used):
 #   N8N_DATA_VOLUME     - Docker volume name (default: n8n-data)
 #   N8N_CREATE_OWNER    - Set to 'false' to disable owner creation (default: true)
-#   N8N_OWNER_EMAIL     - Owner email (default: techyactor15@gmail.com)
-#   N8N_OWNER_FIRSTNAME - Owner first name (default: Daniel)
-#   N8N_OWNER_LASTNAME  - Owner last name (default: Goldstein)
+#   N8N_OWNER_EMAIL     - Owner email
+#   N8N_OWNER_FIRSTNAME - Owner first name
+#   N8N_OWNER_LASTNAME  - Owner last name
 #   N8N_OWNER_HASH      - Pre-hashed bcrypt password (required for owner creation)
 #   CONTAINER_ENGINE    - Override container engine: 'docker' or 'podman'
+#   PUSH                - Set to 'true' to push image to registry instead of loading locally
 
 set -euo pipefail
 
@@ -31,10 +32,14 @@ GRAY='\033[0;90m'
 NC='\033[0m'
 
 # ===== Defaults =====
-DEFAULT_OWNER_EMAIL="techyactor15@gmail.com"
-DEFAULT_OWNER_FIRSTNAME="Daniel"
-DEFAULT_OWNER_LASTNAME="Goldstein"
-# Default bcrypt hash for password: ExamplePassword123!
+# These are intentionally generic placeholder values.
+# Override with environment variables in production:
+#   N8N_OWNER_EMAIL, N8N_OWNER_FIRSTNAME, N8N_OWNER_LASTNAME, N8N_OWNER_HASH
+DEFAULT_OWNER_EMAIL="owner@example.com"
+DEFAULT_OWNER_FIRSTNAME="n8n"
+DEFAULT_OWNER_LASTNAME="Owner"
+# Example bcrypt hash — for the password: ExamplePassword123!
+# Always set N8N_OWNER_HASH in your environment before using --run in production.
 DEFAULT_OWNER_HASH='$2a$10$jTnfKXZCiUQwQnG3OOYnVOYHthaNHhK3iPcKq6uMJ8MwcYc80iw5K'
 
 # ===== Script Setup =====
@@ -86,13 +91,6 @@ format_duration() {
 	echo "${1}s"
 }
 
-get_image_size() {
-	local image_name="$1"
-	local size
-	size=$(docker images "$image_name" --format "{{.Size}}" 2>/dev/null | head -1)
-	echo "${size:-Unknown}"
-}
-
 command_exists() {
 	command -v "$1" >/dev/null 2>&1
 }
@@ -135,6 +133,23 @@ get_container_engine() {
 	exit 1
 }
 
+# Determine whether an image name refers to a registry (and should be pushed).
+# A registry host is the first path segment and contains '.' or ':' (e.g. ghcr.io,
+# registry.example.com, localhost:5000).  The explicit PUSH=true env var overrides.
+is_registry_image() {
+	local image="$1"
+	[ "${PUSH:-}" = "true" ] && return 0
+	local first_segment="${image%%/*}"
+	[[ "$first_segment" == *"."* || "$first_segment" == *":"* ]]
+}
+
+get_image_size() {
+	local image_name="$1"
+	local size
+	size=$("$CONTAINER_ENGINE_BIN" images "$image_name" --format "{{.Size}}" 2>/dev/null | head -1)
+	echo "${size:-Unknown}"
+}
+
 check_prerequisites() {
 	if [ ! -d "$COMPILED_APP_DIR" ]; then
 		echo -e "${RED}Error: Compiled app directory not found at $COMPILED_APP_DIR${NC}"
@@ -163,22 +178,16 @@ build_docker_image() {
 	local start_time
 	start_time=$(date +%s)
 
-	local container_engine
-	container_engine=$(get_container_engine)
-
-	# Push directly if image name contains a registry (more than two slashes)
 	local should_push=false
-	local slash_count
-	slash_count=$(echo "$full_image_name" | tr -cd '/' | wc -c)
-	[ "$slash_count" -ge 2 ] && should_push=true
+	is_registry_image "$full_image_name" && should_push=true
 
 	# All informational output goes to stderr so it isn't captured when caller uses $()
-	echo -e "${YELLOW}INFO: Building $name Docker image using $container_engine...${NC}" >&2
+	echo -e "${YELLOW}INFO: Building $name Docker image using $CONTAINER_ENGINE_BIN...${NC}" >&2
 	if [ "$should_push" = true ]; then
 		echo -e "${YELLOW}INFO: Registry detected - pushing directly to $full_image_name${NC}" >&2
 	fi
 
-	if [ "$container_engine" = "podman" ]; then
+	if [ "$CONTAINER_ENGINE_BIN" = "podman" ]; then
 		podman build \
 			--platform "$platform" \
 			--build-arg "TARGETPLATFORM=$platform" \
@@ -238,10 +247,10 @@ display_summary() {
 
 stop_existing_container() {
 	local container_name="n8n-n8n-1"
-	if docker ps -a --filter "name=$container_name" --format "{{.Names}}" | grep -q "^${container_name}$"; then
+	if "$CONTAINER_ENGINE_BIN" ps -a --filter "name=$container_name" --format "{{.Names}}" | grep -q "^${container_name}$"; then
 		echo -e "${YELLOW}INFO: Stopping existing container: $container_name${NC}"
-		docker stop "$container_name" >/dev/null
-		docker rm "$container_name" >/dev/null
+		"$CONTAINER_ENGINE_BIN" stop "$container_name" >/dev/null
+		"$CONTAINER_ENGINE_BIN" rm "$container_name" >/dev/null
 		echo -e "${GREEN}✅ Removed existing container: $container_name${NC}"
 	else
 		echo -e "${GRAY}INFO: No existing container to remove${NC}"
@@ -279,15 +288,15 @@ run_n8n_container() {
 	fi
 
 	# Check if volume exists, create if not
-	if docker volume inspect "$volume_name" >/dev/null 2>&1; then
+	if "$CONTAINER_ENGINE_BIN" volume inspect "$volume_name" >/dev/null 2>&1; then
 		echo -e "${GRAY}INFO: Volume '$volume_name' exists${NC}"
 	else
 		echo -e "${YELLOW}INFO: Creating volume: $volume_name${NC}"
-		docker volume create "$volume_name"
+		"$CONTAINER_ENGINE_BIN" volume create "$volume_name"
 	fi
 
 	# Run the container
-	docker run -d \
+	"$CONTAINER_ENGINE_BIN" run -d \
 		--name "$container_name" \
 		-p 5678:5678 \
 		-v "${volume_name}:/home/node/.n8n" \
@@ -313,12 +322,15 @@ run_n8n_container() {
 
 # ===== Main =====
 PLATFORM=$(get_docker_platform)
+# Determine container engine once and store in a global for all functions to use
+CONTAINER_ENGINE_BIN=$(get_container_engine)
 
 main() {
 	if [ -n "$RUN_MODE" ]; then
 		echo -e "${BLUE}${BOLD}===== Building n8n Docker Image =====${NC}"
 		echo "INFO: n8n Image: $N8N_IMAGE"
 		echo "INFO: Platform: $PLATFORM"
+		echo "INFO: Container engine: $CONTAINER_ENGINE_BIN"
 		echo -e "${GRAY}-----------------------------------------------${NC}"
 
 		check_prerequisites
@@ -340,6 +352,7 @@ main() {
 	echo "INFO: n8n Image: $N8N_IMAGE"
 	echo "INFO: Runners Image: $RUNNERS_IMAGE"
 	echo "INFO: Platform: $PLATFORM"
+	echo "INFO: Container engine: $CONTAINER_ENGINE_BIN"
 	echo -e "${GRAY}-----------------------------------------------${NC}"
 
 	check_prerequisites
