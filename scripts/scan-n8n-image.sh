@@ -156,10 +156,10 @@ TRIVY_ARGS=(
 
 # Handle output file
 if [ -n "$OUTPUT_FILE" ]; then
-	local_output_path="$OUTPUT_FILE"
-	[[ "$OUTPUT_FILE" != /* ]] && local_output_path="$ROOT_DIR/$OUTPUT_FILE"
-	mkdir -p "$(dirname "$local_output_path")"
-	TRIVY_ARGS+=(--output /tmp/trivy-output -v "${local_output_path}:/tmp/trivy-output")
+	resolved_output_path="$OUTPUT_FILE"
+	[[ "$OUTPUT_FILE" != /* ]] && resolved_output_path="$ROOT_DIR/$OUTPUT_FILE"
+	mkdir -p "$(dirname "$resolved_output_path")"
+	TRIVY_ARGS+=(--output /tmp/trivy-output -v "${resolved_output_path}:/tmp/trivy-output")
 fi
 
 TRIVY_ARGS+=("$FULL_IMAGE_NAME")

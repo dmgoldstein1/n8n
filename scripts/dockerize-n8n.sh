@@ -88,7 +88,9 @@ format_duration() {
 
 get_image_size() {
 	local image_name="$1"
-	docker images "$image_name" --format "{{.Size}}" 2>/dev/null || echo "Unknown"
+	local size
+	size=$(docker images "$image_name" --format "{{.Size}}" 2>/dev/null | head -1)
+	echo "${size:-Unknown}"
 }
 
 command_exists() {
@@ -102,6 +104,7 @@ is_docker_podman_shim() {
 get_container_engine() {
 	local override="${CONTAINER_ENGINE:-}"
 	if [ -n "$override" ]; then
+		local lower_override
 		lower_override=$(echo "$override" | tr '[:upper:]' '[:lower:]')
 		if [[ "$lower_override" == "docker" || "$lower_override" == "podman" ]]; then
 			echo "$lower_override"
@@ -169,9 +172,10 @@ build_docker_image() {
 	slash_count=$(echo "$full_image_name" | tr -cd '/' | wc -c)
 	[ "$slash_count" -ge 2 ] && should_push=true
 
-	echo -e "${YELLOW}INFO: Building $name Docker image using $container_engine...${NC}"
+	# All informational output goes to stderr so it isn't captured when caller uses $()
+	echo -e "${YELLOW}INFO: Building $name Docker image using $container_engine...${NC}" >&2
 	if [ "$should_push" = true ]; then
-		echo -e "${YELLOW}INFO: Registry detected - pushing directly to $full_image_name${NC}"
+		echo -e "${YELLOW}INFO: Registry detected - pushing directly to $full_image_name${NC}" >&2
 	fi
 
 	if [ "$container_engine" = "podman" ]; then
@@ -191,12 +195,16 @@ build_docker_image() {
 			-t "$full_image_name" \
 			-f "$dockerfile_path" \
 			--provenance=false \
-			$output_flag \
+			"$output_flag" \
 			"$BUILD_CONTEXT"
-	fi
+	fi || {
+		echo -e "${RED}ERROR: $name Docker build failed${NC}" >&2
+		exit 1
+	}
 
 	local end_time
 	end_time=$(date +%s)
+	# Print only the duration to stdout (captured by caller)
 	echo "$(( end_time - start_time ))s"
 }
 

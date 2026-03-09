@@ -25,7 +25,7 @@ fi
 
 CLI_ROOT="$ROOT_DIR/packages/cli"
 FORMAT_CONFIG="$SCRIPT_DIR/third-party-license-format.json"
-TEMP_LICENSES="$(mktemp /tmp/licenses.XXXXXX.json)"
+TEMP_LICENSES="$(mktemp)"
 OUTPUT_FILE="$CLI_ROOT/THIRD_PARTY_LICENSES.md"
 
 echo -e "${BLUE}🚀 Generating third-party licenses for n8n...${NC}"
