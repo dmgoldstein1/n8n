@@ -28,7 +28,7 @@ pre-commit:
         - rebase
     workspace_deps_check:
       glob: '**/package.json'
-      run: node scripts/check-workspace-deps.mjs {staged_files}
+      run: bash scripts/check-workspace-deps.sh {staged_files}
       skip:
         - merge
         - rebase
