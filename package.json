@@ -80,8 +80,7 @@
     "tsc-alias": "^1.8.10",
     "tsc-watch": "^6.2.0",
     "turbo": "2.8.9",
-    "typescript": "*",
-    "zx": "^8.8.5"
+    "typescript": "*"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
