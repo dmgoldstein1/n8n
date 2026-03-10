@@ -4,7 +4,7 @@
 # Environment variables:
 #   IMAGE_BASE_NAME     - Image base name (default: n8nio/n8n)
 #   IMAGE_TAG           - Image tag (default: local)
-#   TRIVY_IMAGE         - Trivy image to use (default: aquasec/trivy:latest)
+#   TRIVY_IMAGE         - Trivy image to use (default: aquasec/trivy:0.69.2)
 #   TRIVY_SEVERITY      - Severities to scan (default: CRITICAL,HIGH,MEDIUM,LOW)
 #   TRIVY_FORMAT        - Output format (default: table)
 #   TRIVY_OUTPUT        - Output file path (optional)
