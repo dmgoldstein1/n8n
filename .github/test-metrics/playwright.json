@@ -1,7 +1,5 @@
 {
   "updatedAt": "2026-03-03T14:06:03.725Z",
-  "source": "currents",
-  "projectId": "LRxcNt",
   "specs": {
     "tests/e2e/projects/projects.spec.ts": {
       "avgDuration": 146428,

@@ -115,14 +115,9 @@ test.describe('Feature', () => {
 
 ## Refreshing Metrics
 
-```bash
-CURRENTS_API_KEY=<key> node packages/testing/playwright/scripts/fetch-currents-metrics.mjs --project=<id>
-```
-
-This fetches the last 30 days of test durations from Currents, aggregates by spec, and writes to `.github/test-metrics/playwright.json`.
+The `.github/test-metrics/playwright.json` file contains test duration data used for distributing tests across shards. It can be updated manually by running tests and updating the `avgDuration` and `testCount` values for each spec.
 
 **When to refresh:**
-- Weekly (recommended)
 - After significant test changes
 - When adding new specs (optional - they get 60s default)
 
@@ -147,7 +142,6 @@ The janitor handles generic orchestration (works for any Playwright project).
 | Script | Purpose |
 |--------|---------|
 | `scripts/distribute-tests.mjs` | CI adapter — calls janitor, maps images, outputs matrix |
-| `scripts/fetch-currents-metrics.mjs` | Fetches metrics from Currents API |
 
 ### Testing Locally
 
