@@ -35,7 +35,6 @@
     "janitor:fix": "tsx ../janitor/src/cli.ts --fix --write"
   },
   "devDependencies": {
-    "@currents/playwright": "1.20.0",
     "@n8n/api-types": "workspace:*",
     "@n8n/playwright-janitor": "workspace:*",
     "@n8n/constants": "workspace:*",

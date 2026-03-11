@@ -1,12 +1,9 @@
 /* eslint-disable import-x/no-default-export */
-import type { CurrentsFixtures, CurrentsWorkerFixtures } from '@currents/playwright';
-import { currentsReporter } from '@currents/playwright';
 import { defineConfig } from '@playwright/test';
 import type { PlaywrightTestConfig } from '@playwright/test';
 import os from 'os';
 import path from 'path';
 
-import currentsConfig from './currents.config';
 import { getProjects } from './playwright-projects';
 import { getBackendUrl, getFrontendUrl, getPortFromUrl } from './utils/url-helper';
 
@@ -80,7 +77,7 @@ if (FRONTEND_URL) {
 	});
 }
 
-export default defineConfig<CurrentsFixtures, CurrentsWorkerFixtures>({
+export default defineConfig({
 	globalSetup: './global-setup.ts',
 	globalTeardown: IS_DEV ? './global-teardown.ts' : undefined,
 	forbidOnly: IS_CI,
@@ -105,7 +102,6 @@ export default defineConfig<CurrentsFixtures, CurrentsWorkerFixtures>({
 		viewport: MACBOOK_WINDOW_SIZE,
 		actionTimeout: 20000, // TODO: We might need to make this dynamic for container tests if we have low resource containers etc
 		navigationTimeout: 10000,
-		currentsFixturesEnabled: !!process.env.CI,
 	},
 
 	reporter: IS_CI
@@ -114,7 +110,6 @@ export default defineConfig<CurrentsFixtures, CurrentsWorkerFixtures>({
 				['junit', { outputFile: process.env.PLAYWRIGHT_JUNIT_OUTPUT_NAME ?? 'results.xml' }],
 				['html', { open: 'never' }],
 				['json', { outputFile: 'test-results.json' }],
-				...(process.env.CURRENTS_RECORD_KEY ? [currentsReporter(currentsConfig)] : []),
 				['./reporters/metrics-reporter.ts'],
 			]
 		: [['html'], ['./reporters/metrics-reporter.ts'], ['list']],

@@ -1,5 +1,3 @@
-import type { CurrentsFixtures, CurrentsWorkerFixtures } from '@currents/playwright';
-import { fixtures as currentsFixtures } from '@currents/playwright';
 import { test as base, expect, request } from '@playwright/test';
 import type { ServiceHelpers } from 'n8n-containers/services/types';
 import type { N8NConfig, N8NStack } from 'n8n-containers/stack';
@@ -50,12 +48,9 @@ type CapabilityOption = Capability | N8NConfig;
 type ProjectUse = { containerConfig?: N8NConfig };
 
 export const test = base.extend<
-	TestFixtures & CurrentsFixtures & ObservabilityTestFixtures,
-	WorkerFixtures & CurrentsWorkerFixtures
+	TestFixtures & ObservabilityTestFixtures,
+	WorkerFixtures
 >({
-	...currentsFixtures.baseFixtures,
-	...currentsFixtures.coverageFixtures,
-	...currentsFixtures.actionFixtures,
 	...observabilityFixtures,
 	...consoleErrorFixtures,
 
