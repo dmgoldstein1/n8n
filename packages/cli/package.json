@@ -94,7 +94,7 @@
     "ts-essentials": "^7.0.3"
   },
   "dependencies": {
-    "@aws-sdk/client-secrets-manager": "3.808.0",
+    "@aws-sdk/client-secrets-manager": "3.1004.0",
     "@azure/identity": "catalog:",
     "@azure/keyvault-secrets": "4.8.0",
     "@1password/connect": "1.4.2",
@@ -111,7 +111,7 @@
     "@n8n/decorators": "workspace:*",
     "@n8n/di": "workspace:*",
     "@n8n/errors": "workspace:*",
-    "@modelcontextprotocol/sdk": "1.26.0",
+    "@modelcontextprotocol/sdk": "1.27.1",
     "@n8n/n8n-nodes-langchain": "workspace:*",
     "@n8n/permissions": "workspace:*",
     "@n8n/syslog-client": "workspace:*",
