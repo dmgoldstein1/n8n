@@ -17,7 +17,7 @@ jobs:
     outputs:
       db_changed: ${{ steps.paths-filter.outputs.db == 'true' }}
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         # with:
         #   ref: refs/pull/${{ github.event.pull_request.number }}/merge
 
@@ -51,7 +51,7 @@ jobs:
       DB_POSTGRESDB_PASSWORD: password
       DB_POSTGRESDB_POOL_SIZE: 1 # Detect connection pooling deadlocks
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         # with:
         #   ref: refs/pull/${{ github.event.pull_request.number }}/merge
 
