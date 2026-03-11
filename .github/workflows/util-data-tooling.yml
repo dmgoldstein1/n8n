@@ -70,7 +70,7 @@ jobs:
 
       - name: Start Postgres
         if: steps.paths-filter.outputs.db == 'true'
-        uses: isbang/compose-action@802a148945af6399a338c7906c267331b39a71af # v2.0.0
+        uses: isbang/compose-action@4894d2492015c1774ee5a13a95b1072093087ec3 # v2.5.0
         with:
           compose-file: ./.github/docker-compose.yml
           services: |
