@@ -22,7 +22,8 @@ const changelogStream = new ConventionalChangelog(baseDir)
 			const hasNoChangelogInHeader = commit.header.includes('(no-changelog)');
 			const isBenchmarkScope = commit.scope === 'benchmark';
 
-			// Ignore commits that have 'benchmark' scope or '(no-changelog)' in the header
+			// conventional-changelog v7 uses `transformCommit`: returning `null`
+			// omits a commit, while returning the commit keeps it in the changelog.
 			return hasNoChangelogInHeader || isBenchmarkScope ? null : commit;
 		},
 	})
