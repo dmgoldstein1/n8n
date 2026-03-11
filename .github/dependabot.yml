@@ -1,0 +1,28 @@
+version: 2
+updates:
+  # Maintain dependencies for pnpm
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "dmgoldstein1"
+
+  # Maintain dependencies for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "dmgoldstein1"
+
+  # Maintain dependencies for Docker
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "dmgoldstein1"
