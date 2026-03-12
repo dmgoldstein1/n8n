@@ -43,7 +43,7 @@ catalog:
   axios: 1.13.5
   basic-auth: 2.0.1
   callsites: 3.1.0
-  chokidar: 4.0.3
+  chokidar: 5.0.0
   eslint: 9.29.0
   fast-glob: 3.2.12
   fastest-levenshtein: 1.0.16
