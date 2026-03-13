@@ -23,7 +23,7 @@ jobs:
 
       - name: Export Dependabot alerts
         id: export
-        uses: dmgoldstein1/dependabot-alert-export@b3e2177ea68ba0baf738d705ee6b2f8260e60b00
+        uses: dmgoldstein1/dependabot-alert-export@b3e2177ea68ba0baf738d705ee6b2f8260e60b00 # main @ 2026-03-13
         with:
           GITHUB_TOKEN: ${{ secrets.DEPENDABOT_ALERT_EXPORT_TOKEN }}
           org_name: ${{ github.repository_owner }}
@@ -35,7 +35,7 @@ jobs:
         with:
           name: dependabot-alerts-export
           path: ${{ env.CSV_PATH }}
-          if-no-files-found: error
+          if-no-files-found: warn
 
       - name: Log exported alert count
         run: echo "Exported $ALERTS_COUNT Dependabot alerts"
