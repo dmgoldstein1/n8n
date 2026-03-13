@@ -38,7 +38,7 @@ jobs:
           output_path = Path(os.environ['OUTPUT_PATH'])
           owner, repo = os.environ['REPOSITORY'].split('/', 1)
           states = ('open', 'closed')
-          request_timeout_seconds = 30
+          API_REQUEST_TIMEOUT_SECONDS = 30
           headers = {
               'Accept': 'application/vnd.github+json',
               'Authorization': f"Bearer {os.environ['GITHUB_TOKEN']}",
@@ -56,7 +56,7 @@ jobs:
               while next_url:
                   request = Request(next_url, headers=headers)
                   try:
-                      with urlopen(request, timeout=request_timeout_seconds) as response:
+                      with urlopen(request, timeout=API_REQUEST_TIMEOUT_SECONDS) as response:
                           alerts.extend(json.load(response))
                           link_header = response.headers.get('Link', '')
                   except HTTPError as exc:
