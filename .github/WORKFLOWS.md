@@ -210,6 +210,7 @@ These only run if specific files changed:
 | Workflow                  | Purpose                                                 |
 |---------------------------|---------------------------------------------------------|
 | `util-claude-task.yml`    | Run Claude Code to complete a task and create a PR      |
+| `util-export-dependabot-alerts.yml` | Export Dependabot alerts to a CSV artifact (manual + weekly) |
 | `util-data-tooling.yml`   | SQLite/PostgreSQL export/import validation (manual)     |
 
 #### Claude Task Runner (`util-claude-task.yml`)
@@ -228,6 +229,10 @@ Claude reads templates from `.github/claude-templates/` for task-specific guidan
 - Pull requests: `Read and write`
 
 **Governance:** If you provide your personal PAT, you cannot approve the resulting PR. For automated/bot use cases (e.g., dependabot-style updates via n8n workflows), an app token can be used instead.
+
+#### Dependabot Alert Export (`util-export-dependabot-alerts.yml`)
+
+Exports Dependabot alerts for this repository to a CSV artifact on demand or on a weekly schedule. Configure the `DEPENDABOT_ALERT_EXPORT_TOKEN` repository secret with a PAT that can read Dependabot alerts before running the workflow.
 
 ---
 

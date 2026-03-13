@@ -1,0 +1,43 @@
+name: 'Util: Export Dependabot Alerts'
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 8 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  export_dependabot_alerts:
+    name: Export Dependabot alerts
+    runs-on: ${{ vars.RUNNER_PROVIDER == 'github' && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2204' }}
+    env:
+      CSV_PATH: dependabot-alerts/vulnerability.csv
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Create export directory
+        run: mkdir -p "$(dirname "$CSV_PATH")"
+
+      - name: Export Dependabot alerts
+        id: export
+        uses: dmgoldstein1/dependabot-alert-export@b3e2177ea68ba0baf738d705ee6b2f8260e60b00
+        with:
+          GITHUB_TOKEN: ${{ secrets.DEPENDABOT_ALERT_EXPORT_TOKEN }}
+          org_name: ${{ github.repository_owner }}
+          repo_name: ${{ github.event.repository.name }}
+          csv_path: ${{ env.CSV_PATH }}
+
+      - name: Upload Dependabot alerts artifact
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v4.6.2
+        with:
+          name: dependabot-alerts-export
+          path: ${{ env.CSV_PATH }}
+          if-no-files-found: error
+
+      - name: Log exported alert count
+        run: echo "Exported $ALERTS_COUNT Dependabot alerts"
+        env:
+          ALERTS_COUNT: ${{ steps.export.outputs.alerts_count }}
