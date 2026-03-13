@@ -28,7 +28,6 @@ jobs:
           import json
           import os
           import re
-          import sys
           from urllib.error import HTTPError, URLError
           from pathlib import Path
           from urllib.parse import urlencode
