@@ -210,6 +210,7 @@ These only run if specific files changed:
 | Workflow                  | Purpose                                                 |
 |---------------------------|---------------------------------------------------------|
 | `util-claude-task.yml`    | Run Claude Code to complete a task and create a PR      |
+| `util-export-code-scanning-alerts.yml` | Export code scanning alerts to a JSON artifact (manual + weekly) |
 | `util-export-dependabot-alerts.yml` | Export Dependabot alerts to a CSV artifact (manual + weekly) |
 | `util-data-tooling.yml`   | SQLite/PostgreSQL export/import validation (manual)     |
 
@@ -233,6 +234,10 @@ Claude reads templates from `.github/claude-templates/` for task-specific guidan
 #### Dependabot Alert Export (`util-export-dependabot-alerts.yml`)
 
 Exports Dependabot alerts for this repository to a CSV artifact on demand or on a weekly schedule. Configure the `DEPENDABOT_ALERT_EXPORT_TOKEN` repository secret with a PAT that can read Dependabot alerts before running the workflow.
+
+#### Code Scanning Alert Export (`util-export-code-scanning-alerts.yml`)
+
+Exports the repository's code scanning alerts to a single JSON artifact on demand or on a weekly schedule using the workflow `GITHUB_TOKEN`.
 
 ---
 

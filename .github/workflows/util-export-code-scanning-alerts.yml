@@ -1,0 +1,67 @@
+name: 'Util: Export Code Scanning Alerts'
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 9 * * 1'
+
+permissions:
+  contents: read
+  security-events: read
+
+jobs:
+  export_code_scanning_alerts:
+    name: Export code scanning alerts
+    runs-on: ${{ vars.RUNNER_PROVIDER == 'github' && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2204' }}
+    env:
+      OUTPUT_PATH: code-scanning/alerts.json
+    steps:
+      - name: Export code scanning alerts
+        id: export
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('node:fs/promises');
+            const path = require('node:path');
+
+            const { owner, repo } = context.repo;
+            const outputPath = process.env.OUTPUT_PATH;
+            const states = ['open', 'closed'];
+
+            const alertsByState = await Promise.all(
+              states.map(async (state) => [
+                state,
+                await github.paginate(github.rest.codeScanning.listAlertsForRepo, {
+                  owner,
+                  repo,
+                  per_page: 100,
+                  state,
+                }),
+              ]),
+            );
+
+            const alerts = alertsByState.flatMap(([, stateAlerts]) => stateAlerts);
+            const exportPayload = {
+              repository: `${owner}/${repo}`,
+              exportedAt: new Date().toISOString(),
+              alertCount: alerts.length,
+              alerts,
+            };
+
+            await fs.mkdir(path.dirname(outputPath), { recursive: true });
+            await fs.writeFile(outputPath, `${JSON.stringify(exportPayload, null, 2)}\n`);
+
+            core.setOutput('alerts_count', String(alerts.length));
+
+      - name: Upload code scanning alerts artifact
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v4.6.2
+        with:
+          name: code-scanning-alerts-export
+          path: ${{ env.OUTPUT_PATH }}
+          if-no-files-found: error
+
+      - name: Log exported alert count
+        run: echo "Exported $ALERTS_COUNT code scanning alerts"
+        env:
+          ALERTS_COUNT: ${{ steps.export.outputs.alerts_count }}
